@@ -4,6 +4,8 @@ mod utils;
 
 use wasm_bindgen::prelude::*;
 use rssol::Solitaire;
+use rssol::Success;
+use rssol::Failure;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -12,13 +14,7 @@ use rssol::Solitaire;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn greet() -> String {
-   "Hello, you fool!".to_owned()
-}
-
-#[wasm_bindgen]
 pub struct Solgame {
-   data: String,
    sol: Solitaire,
 }
 
@@ -26,9 +22,32 @@ pub struct Solgame {
 impl Solgame {
    pub fn new() -> Solgame {
       console_error_panic_hook::set_once();
-      let mut sg = Solgame{ data: "Hello, other fool!".to_owned(), sol: Solitaire::new() };
+      let mut sg = Solgame{ sol: Solitaire::new() };
       sg.sol.new_game();
       sg
+   }
+
+   pub fn cmd(&mut self, input: &str) -> String {
+      match self.sol.command(input) {
+         Ok(success) => {
+            match success {
+               Success::Quit => "retire".to_owned(),
+               Success::Help(_) => "noop".to_owned(),
+               Success::Retire => "retire".to_owned(),
+               Success::ValidMove(_) => "valid".to_owned(),
+               Success::Victory(_) => {
+                  self.sol.new_game();
+                  "victory".to_owned()
+               },
+            }
+         },
+         Err(failure) => {
+            match failure {
+               Failure::InvalidMove => "bad_move".to_owned(),
+               Failure::InvalidCommand => "invalid_command".to_owned(),
+            }
+         },
+      }
    }
 
    pub fn help() -> String {
@@ -37,9 +56,5 @@ impl Solgame {
 
    pub fn display(&self) -> String {
       self.sol.display()
-   }
-
-   pub fn msg(&self) -> String {
-      self.data.clone()
    }
 }

@@ -10,7 +10,11 @@ export const GameContextProvider = ({children}) => {
           try {
             const wasm = await import('solgame');
             const newSolGame = wasm.Solgame.new();
-            setGame({wasm: wasm, solGame: newSolGame});
+            setGame({
+              wasm: wasm,
+              solGame: newSolGame,
+              command: '',
+            });
           }
           catch(err) {
             console.error(`Unexepcted error loading wasm. [Message: ${err.message}]`);
