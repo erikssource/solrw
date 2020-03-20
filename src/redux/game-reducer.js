@@ -39,34 +39,37 @@ export default function(state = initialState, action) {
                 status: { type: 'info', msg: 'Loading...'},
             }
         }
-        case Actions.EXECUTE_COMMAND: {
-            let display = state.display;
-            let status = state.status;
-            const result = state.solGame.cmd(state.command);
-            if (result === 'retire') {
-                status = { type: 'warning', msg: 'Previous Game Retired'};
-                display = state.solGame.display();
+        case Actions.EXECUTE_COMMAND: {            
+            if (state.command !== '') {
+                let display = state.display;
+                let status = state.status;
+                const result = state.solGame.cmd(state.command);
+                if (result === 'retire') {
+                    status = { type: 'warning', msg: 'Previous Game Retired'};
+                    display = state.solGame.display();
+                }
+                else if (result === 'valid') {
+                    status = { type: 'success', msg: `Valid Move: ${state.command}`};
+                    display = state.solGame.display();
+                }
+                else if (result === 'victory') {
+                    status = { type: 'success', msg: `Victory!!!`};
+                    display = state.solGame.display();
+                }
+                else if (result === 'bad_move') {
+                    status = { type: 'error', msg: `Invalid Move: ${state.command}`};
+                }
+                else if (result === 'invalid_command') {
+                    status = { type: 'error', msg: `Invalid Command: ${state.command}`};
+                }
+                return {
+                    ...state,
+                    display: display,
+                    command: '',
+                    status: status,
+                }
             }
-            else if (result === 'valid') {
-                status = { type: 'success', msg: `Valid Move: ${state.command}`};
-                display = state.solGame.display();
-            }
-            else if (result === 'victory') {
-                status = { type: 'success', msg: `Victory!!!`};
-                display = state.solGame.display();
-            }
-            else if (result === 'bad_move') {
-                status = { type: 'error', msg: `Invalid Move: ${state.command}`};
-            }
-            else if (result === 'invalid_command') {
-                status = { type: 'error', msg: `Invalid Command: ${state.command}`};
-            }
-            return {
-                ...state,
-                display: display,
-                command: '',
-                status: status,
-            };
+            return state;
         }
         case Actions.LOAD_GAME_SUCCESS: {
             return {
